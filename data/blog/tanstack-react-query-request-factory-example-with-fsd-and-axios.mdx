@@ -1,0 +1,752 @@
+---
+title: 'React Query Request Factory: Reusable Type-Safe Hooks with Axios & FSD'
+summary: Learn how to build a scalable CRUD hook factory with @tanstack/react-query and axios, apply Feature-Sliced Design, and keep everything type-safe and well-tested.
+date: 2025-04-30
+tags: ['react', 'FSD', 'react-query', 'axios', 'architecture', 'hook factory']
+images: ['/static/images/tanstack-react-query-request-factory-example-with-fsd-and-axios.png']
+draft: false
+---
+
+import Alert from '@/components/Alert'
+
+In the modern world of frontend development, optimizing data handling is the key to creating responsive and scalable applications. Using libraries for asynchronous requests, such as `@tanstack/react-query` and `axios`, provides a convenient system for working with `REST APIs`, `tRPC`, or `GraphQL`.
+
+When developing applications, we often need to perform the same actions for different API entities: get a list of items, retrieve a single item by ID, create a new item, as well as perform updates and deletions. These operations are called `CRUD` (Create, Read, Update, Delete).
+
+I will show how to implement universal CRUD hooks using the aforementioned libraries in a functional style based on the factory pattern. Instead of duplicating code for each entity, we can generate hooks, which significantly reduces the amount of copy-paste code and makes it more flexible and reusable. This approach is easily scalable, universal, and applicable to any API.
+
+## @tanstack/react-query and axios
+
+- [`@tanstack/react-query`](https://tanstack.com/query/latest/docs/framework/react/overview) — formerly known as react-query, is a library for managing the state of requests, caching data, and syncing it with the server. It significantly improves performance and simplifies working with asynchronous requests by abstracting API logic away from the data rendering logic in React components.
+- [`axios`](https://github.com/axios/axios) is a popular library for making HTTP requests. It is known for its flexibility and ease of use, including when working with asynchronous operations.
+
+Our goal is to create a function that will automatically generate CRUD hooks for any entity, saving us from having to write the same code over and over. For example, if we need to fetch users, posts, or comments, we do not want to repeat the same boilerplate code for each entity.
+
+## Implementing CRUD Hooks in Functional Style
+
+Let's proceed with the implementation. We will create a function `createCrudHooks` that returns a set of CRUD hooks for any given entity.
+
+### Step 1: Connect the necessary libraries
+
+For handling queries and caching, install `@tanstack/react-query` and `axios` (after switching to your project directory):
+
+```console
+cd ./my-awesome-project
+npm i axios react-query
+```
+
+### Step 2: Create the main function
+
+Now create the `createCRUDHooks` function, which takes a base URL and an entity name (for example, users or posts). The function will return a set of hooks for performing CRUD operations.
+
+```ts:createCRUDHooks.ts
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
+import axios, { AxiosResponse } from 'axios'
+
+const createCrudHooks = <T>(baseUrl: string, entity: string) => {
+  const api = axios.create({
+    baseURL: baseUrl,
+  })
+
+  // Fetch All (GET)
+  const useFetchAll = (queryKey: string) => {
+    return useQuery<T[]>(queryKey, async () => {
+      const response: AxiosResponse<T[]> = await api.get(`/${entity}`)
+      return response.data
+    })
+  }
+
+  // Fetch One by ID (GET)
+  const useFetchOne = (queryKey: string, id: string | number) => {
+    return useQuery<T>([queryKey, id], async () => {
+      const response: AxiosResponse<T> = await api.get(`/${entity}/${id}`)
+      return response.data
+    })
+  }
+
+  // Create (POST)
+  const useCreate = () => {
+    const queryClient = useQueryClient()
+
+    return useMutation(
+      async (data: Partial<T>) => {
+        const response: AxiosResponse<T> = await api.post(`/${entity}`, data)
+        return response.data
+      },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries(entity)
+        },
+      }
+    )
+  }
+
+  // Update (PUT)
+  const useUpdate = () => {
+    const queryClient = useQueryClient()
+
+    return useMutation(
+      async ({ id, data }: { id: string | number; data: Partial<T> }) => {
+        const response: AxiosResponse<T> = await api.put(
+          `/${entity}/${id}`,
+          data
+        )
+        return response.data
+      },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries(entity)
+        },
+      }
+    )
+  }
+
+  // Delete (DELETE)
+  const useDelete = () => {
+    const queryClient = useQueryClient()
+
+    return useMutation(
+      async (id: string | number) => {
+        const response: AxiosResponse<void> = await api.delete(
+          `/${entity}/${id}`
+        )
+        return response.data
+      },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries(entity)
+        },
+      }
+    )
+  }
+
+  return {
+    useFetchAll,
+    useFetchOne,
+    useCreate,
+    useUpdate,
+    useDelete
+  }
+}
+```
+
+You can read more about type-safe usage with @tanstack/react-query in the article [Type-safe React Query](https://tkdodo.eu/blog/type-safe-react-query).
+
+Let's examine in more detail what hooks the `createCrudHooks` function returns:
+
+#### Hook useFetchAll
+
+This hook sends a GET request to retrieve a list of items for a given entity (for example, a list of users), and uses the `useQuery` hook from the `@tanstack/react-query` library for caching and tracking the state of the request. It returns an array of items that can be used in any React component for rendering or further manipulation. The function can be extended to pass additional query parameters, for example, to filter results.
+
+#### Hook useFetchOne
+
+This hook retrieves a single item by its ID (unique identifier). It also uses `useQuery`, but takes a second argument — the item’s ID. This allows you to get data for a specific entity item.
+
+#### Hook useCreate
+
+This hook is used to create new items. It issues a POST request to the API and, after successfully creating an item, calls `invalidateQueries` to refresh the cache, automatically reloading data in other components where our hooks are used.
+
+#### Hook useUpdate
+
+A PUT request is used to update an item. The hook takes an object containing the item’s ID and the data to update. After a successful update, the data cache is refreshed as well.
+
+#### Hook useDelete
+
+This hook deletes an item by its ID using a DELETE request and updates the data cache after deletion.
+
+### Step 3: Tests
+
+Let's add tests to ensure our code works correctly and without errors.
+
+First, set up the test environment with the following libraries:
+
+- `@testing-library/react` — for testing React components.
+- `@testing-library/jest-dom` — provides additional matchers for assertions (for example, `toBeInTheDocument`).
+- `vitest` — a test runner and framework for writing tests.
+- `axios-mock-adapter` — for mocking requests via axios.
+
+```console
+npm i @testing-library/react @testing-library/jest-dom vitest axios-mock-adapter -D
+```
+
+To run the tests, add the following script to `package.json`:
+
+```json
+"scripts": {
+  "test": "vitest"
+}
+```
+
+Now you can run the tests:
+
+```console
+npm run test
+```
+
+Let's create a test file, for example `crudHooks.test.tsx`:
+
+```ts:crudHooks.test.tsx
+import { QueryClient, QueryClientProvider } from 'react-query'
+import { act, renderHook } from '@testing-library/react'
+import axios from 'axios'
+import MockAdapter from 'axios-mock-adapter'
+// Your hooks
+import { createCrudHooks } from './crudHooks'
+
+const mock = new MockAdapter(axios)
+
+const createTestQueryClient = () => {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  })
+}
+
+const wrapper = ({ children }: { children: React.ReactNode }) => {
+  const queryClient = createTestQueryClient()
+  return (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  )
+}
+
+interface User {
+  id: number
+  name: string
+  email: string
+}
+
+// Create hooks for user entity
+const { useFetchAll, useFetchOne, useCreate, useUpdate, useDelete } =
+  createCrudHooks<User>('https://api.example.io', 'users')
+
+beforeEach(() => {
+  mock.reset()
+})
+
+describe('CRUD Hooks', () => {
+  it('should fetch all users successfully', async () => {
+    const mockData = [
+      { id: 1, name: 'Ivan Green', email: 'ivan@example.io' },
+      { id: 2, name: 'Inna Green', email: 'inna@example.io' },
+    ]
+
+    mock.onGet('/users').reply(200, mockData)
+
+    const { result, waitFor } = renderHook(() => useFetchAll('users'), {
+      wrapper,
+    })
+
+    await waitFor(() => result.current.isSuccess)
+
+    expect(result.current.data).toEqual(mockData)
+  })
+
+  it('should fetch one user by ID', async () => {
+    const mockUser = { id: 1, name: 'Ivan Green', email: 'ivan@example.io' }
+
+    mock.onGet('/users/1').reply(200, mockUser)
+
+    const { result, waitFor } = renderHook(() => useFetchOne('users', 1), {
+      wrapper,
+    })
+
+    await waitFor(() => result.current.isSuccess)
+
+    expect(result.current.data).toEqual(mockUser)
+  })
+
+  it('should create a new user', async () => {
+    const newUser = { id: 3, name: 'Sam Smith', email: 'sam@example.io' }
+
+    mock.onPost('/users').reply(201, newUser)
+
+    const { result, waitFor } = renderHook(() => useCreate(), { wrapper })
+
+    act(() => {
+      result.current.mutate({ name: 'Sam Smith', email: 'sam@example.io' })
+    })
+
+    await waitFor(() => result.current.isSuccess)
+
+    expect(result.current.data).toEqual(newUser)
+  })
+
+  it('should update a user', async () => {
+    const updatedUser = {
+      id: 1,
+      name: 'Ivan Updated',
+      email: 'ivan.updated@example.io',
+    }
+
+    mock.onPut('/users/1').reply(200, updatedUser)
+
+    const { result, waitFor } = renderHook(() => useUpdate(), { wrapper })
+
+    act(() => {
+      result.current.mutate({
+        id: 1,
+        data: { name: 'Ivan Updated', email: 'Ivan.updated@example.io' },
+      })
+    })
+
+    await waitFor(() => result.current.isSuccess)
+
+    expect(result.current.data).toEqual(updatedUser)
+  })
+
+  it('should delete a user', async () => {
+    mock.onDelete('/users/1').reply(200)
+
+    const { result, waitFor } = renderHook(() => useDelete(), { wrapper })
+
+    act(() => {
+      result.current.mutate(1)
+    })
+
+    await waitFor(() => result.current.isSuccess)
+
+    expect(result.current.isSuccess).toBe(true)
+  })
+})
+```
+
+We have created tests for our CRUD hook set using `react-testing-library`, `axios-mock-adapter`, and `vitest`. This makes our code reliable and well-tested, which is important for developing scalable and maintainable applications. Testing asynchronous operations becomes much easier thanks to request mocking and tools for working with hooks.
+
+## Example usage in a React component
+
+Now that we have created universal hooks, let's see how to use them in a real component:
+
+```tsx
+interface User {
+  id: number
+  name: string
+  email: string
+}
+
+// Can be moved to a separate file for reuse
+const { useFetchAll, useCreate, useUpdate, useDelete } = createCrudHooks<User>(
+  'https://api.example.io',
+  'users'
+)
+
+type UserProps = {
+  user: User
+}
+
+const UserItem = ({ user }: UserProps) => {
+  const { mutate: updateUser } = useUpdate()
+  const { mutate: deleteUser } = useDelete()
+
+  const handleUpdate = () => {
+    updateUser({ id: user.id, data: { name: 'Ivan' } })
+  }
+
+  const handleDelete = () => {
+    deleteUser(user.id)
+  }
+
+  return (
+    <li key={user.id}>
+      {user.name} - {user.email}
+      <button onClick={handleUpdate}>Update name</button>
+      <button onClick={handleDelete}>Delete</button>
+    </li>
+  )
+}
+
+export const Users = () => {
+  const { data: users, isLoading } = useFetchAll('users')
+  const { mutate: createUser } = useCreate()
+
+  const handleCreateUser = () => {
+    createUser({ name: 'Darya', email: 'darya@example.io' })
+  }
+
+  if (isLoading) return <div>Loading users...</div>
+
+  return (
+    <div>
+      <h1>Users</h1>
+      <ul>
+        {users?.map((user: User) => (
+          <UserItem key={user.id} user={user} />
+        ))}
+      </ul>
+      <button onClick={handleCreateUser}>Create user</button>
+    </div>
+  )
+}
+```
+
+## What’s wrong with this approach?
+
+When using wrappers for hooks, you can encounter typing issues as described in [this GitHub discussion](https://github.com/TkDodo/blog-comments/discussions/91#discussioncomment-4729434). One option is to use query factories, which we will consider next. You can write your own factory or use the library [Query Key Factory](https://github.com/lukemorales/query-key-factory).
+
+## Example of using a query factory in an application built on Feature-Sliced Design (FSD) principles
+
+As a project scales, it becomes important to ensure its modularity and organization. One architectural approach is Feature-Sliced Design ([FSD](https://feature-sliced.design)), which helps organize an application by functionality, delineating layers of responsibility. Let's consider how to apply FSD to a project that uses `@tanstack/react-query`.
+
+### What is Feature-Sliced Design?
+
+[FSD](https://feature-sliced.design) (Feature-Sliced Design) is an architectural approach in which an application is divided into independent modules (features) based on functionality. The main goal is to improve scalability, maintainability, and readability of the project. FSD helps avoid uncontrolled growth of the codebase and simplifies testing.
+
+### FSD Levels
+
+- **App**: Global configurations, routing, and providers.
+- **Pages**: Full pages or large parts of a page for nested routing.
+- **Widgets**: Large self-contained pieces of functionality or interface, usually implementing an entire user scenario.
+- **Features**: Reusable implementations of whole features of the product, i.e., actions that deliver business value to the user.
+- **Entities**: Basic business logic objects, such as users, orders, and products.
+- **Shared**: Common modules, such as UI components, utilities, and API helpers.
+
+### Query factory and FSD
+
+Now let's look at a project architecture using the `query factory` and the `FSD` approach.
+
+**Project structure**:
+
+```
+src/
+├── app/                   // Global configurations, routing, and providers
+├── entities/              // Entities
+│   └── pokemon/
+│       ├── api/
+│       ├── model/
+│       └── ui/
+├── features/              // Features
+├── widgets/               // Widgets
+├── pages/                 // Pages (PokemonsPage for example)
+└── shared/                // Common modules, such as UI components, utilities..
+```
+
+#### Shared (Common resources)
+
+**Shared** includes common components, utilities, configurations, and general API helpers. Let's write a `createQueries` function, which will serve as a query factory; let's assume we are using a simple CRUD API to communicate with the server:
+
+```ts:createQueries.ts
+import { keepPreviousData, queryOptions } from '@tanstack/react-query';
+import * as qs from 'qs';
+import { createQueryFn } from '../../api/createQueryFn';
+import { createMutationFn } from '../../api/createMutationFn';
+import { createDeleteMutationFn } from '../../api/createDeleteMutationFn';
+import { createUpdateMutationFn } from '../../api/createUpdateMutationFn';
+
+// We pass generics so that when we write code later, the types are displayed correctly.
+export const createQueries = <
+  CreateResponse,
+  CreateBody,
+  ReadResponse,
+  ReadOneResponse,
+  UpdateResponse,
+  UpdateBody,
+  DeleteResponse,
+  DeleteParams
+>(
+  entity: string
+) => ({
+  all: () =>
+    queryOptions({
+      queryKey: [entity],
+    }),
+  create: () => ({
+    mutationKey: [entity],
+    mutationFn: (body: CreateBody) =>
+      createMutationFn<CreateResponse, CreateBody>({
+        path: `/${entity}`,
+        body,
+      }),
+    placeholderData: keepPreviousData,
+  }),
+  read: (filters) =>
+    queryOptions({
+      queryKey: [entity, filters],
+      queryFn: () =>
+        createQueryFn<ReadResponse>({
+          path: `/${entity}?${qs.stringify(filters)}`,
+        }),
+      placeholderData: keepPreviousData,
+    }),
+  readOne: ({ id }) =>
+    queryOptions({
+      queryKey: [entity, id],
+      queryFn: () =>
+        createQueryFn<ReadOneResponse>({
+          path: `/${entity}/${id}`,
+        }),
+      placeholderData: keepPreviousData,
+    }),
+  update: () => ({
+    mutationKey: [entity],
+    mutationFn: ({ id, body }) =>
+      createUpdateMutationFn<UpdateResponse, UpdateBody>({
+        path: `/${entity}/${id}`,
+        body,
+      }),
+    placeholderData: keepPreviousData,
+  }),
+  delete: () => ({
+    mutationKey: [entity],
+    mutationFn: (params: DeleteParams) =>
+      createDeleteMutationFn<DeleteResponse>({
+        path: `/${entity}/${params.id}`,
+      }),
+    placeholderData: keepPreviousData,
+  }),
+});
+```
+
+This function returns an object with query configurations for basic CRUD operations.
+
+Let's create a test file `createQueries.test.ts`:
+
+```ts:createQueries.test.ts
+import { describe, it, expect, vi } from 'vitest';
+import { createQueries } from './createQueries.ts';
+import * as api from '../../api/createQueryFn';
+import * as mutationApi from '../../api/createMutationFn';
+
+vi.mock('../../api/createQueryFn', () => ({
+  createQueryFn: vi.fn(),
+}));
+
+vi.mock('../../api/createMutationFn', () => ({
+  createMutationFn: vi.fn(),
+}));
+
+vi.mock('../../api/createDeleteMutationFn', () => ({
+  createDeleteMutationFn: vi.fn(),
+}));
+
+vi.mock('../../api/createUpdateMutationFn', () => ({
+  createUpdateMutationFn: vi.fn(),
+}));
+
+describe('createQueries', () => {
+  const entity = 'user';
+
+  it('should return correct query options for "all"', () => {
+    const queries = createQueries(entity);
+    const result = queries.all();
+
+    expect(result.queryKey).toEqual([entity]);
+  });
+
+  it('should create mutation for "create"', () => {
+    const queries = createQueries(entity);
+    const body = { name: 'Alexander' };
+
+    queries.create().mutationFn(body);
+
+    expect(mutationApi.createMutationFn).toHaveBeenCalledWith({
+      path: `/${entity}`,
+      body,
+    });
+  });
+
+  it('should return correct query options for "read"', () => {
+    const queries = createQueries(entity);
+    const filters = { page: 1 };
+
+    queries.read(filters).queryFn();
+
+    expect(api.createQueryFn).toHaveBeenCalledWith({
+      path: `/${entity}?page=1`,
+    });
+  });
+
+  it('should return correct query options for "readOne"', () => {
+    const queries = createQueries(entity);
+    const id = 123;
+
+    queries.readOne({ id }).queryFn();
+
+    expect(api.createQueryFn).toHaveBeenCalledWith({
+      path: `/${entity}/${id}`,
+    });
+  });
+
+  it('should create mutation for "update"', () => {
+    const queries = createQueries(entity);
+    const id = 123;
+    const body = { name: 'Updated' };
+
+    queries.update().mutationFn({ id, body });
+
+    expect(mutationApi.createUpdateMutationFn).toHaveBeenCalledWith({
+      path: `/${entity}/${id}`,
+      body,
+    });
+  });
+
+  it('should create mutation for "delete"', () => {
+    const queries = createQueries(entity);
+    const params = { id: 123 };
+
+    queries.delete().mutationFn(params);
+
+    expect(mutationApi.createDeleteMutationFn).toHaveBeenCalledWith({
+      path: `/${entity}/${params.id}`,
+    });
+  });
+});
+```
+
+Now our function is tested 😉
+
+#### Entities
+
+Entities are the main domain objects that the application works with, for example, `User` or `Pokemon`. Each entity has its own module, which includes data type definitions, CRUD hooks, UI components for display, and possibly adapters for interacting with the API.
+
+Example structure of the `Pokemon` entity:
+
+```
+src/
+└── entities/
+    └── pokemon/
+        ├── api/
+        │   ├── pokemon.query.ts      // Pokemon Queries
+        │   ├── usePokemon.tsx        // Hook for getting one Pokemon
+        │   ├── usePokemonCreate.tsx  // Hook for Pokemon creation
+        │   ├── usePokemonDelete.tsx  // Hook for Pokemon deletion
+        │   ├── usePokemonList.tsx    // Hook for getting Pokemon list
+        │   └── usePokemonUpdate.tsx  // Hook for Pokemon update
+        └── model/
+            └── Pokemon.ts            // Types for Pokemon entity
+        └── ui/
+            ├── PokemonList.tsx       // React component for Pokemon list
+            └── PokemonCard.tsx       // React component for Pokemon card
+```
+
+- **api/usePokemon\*.ts**: CRUD hook implementations for the Pokemon API.
+- **model/Pokemon.ts**: Data type definitions for the `Pokemon` entity.
+- **ui/PokemonList.tsx** and **ui/PokemonCard.tsx**: UI components for the Pokemon entity (displaying a list of Pokemon and an individual Pokemon).
+
+Example **pokemon.query.ts** using `createQueries`:
+
+```ts:pokemon.query.ts
+import { createQueries } from '../../../shared/lib/createQueries/createQueries';
+import {
+  CreatePokemonResponse,
+  CreatePokemonBody,
+  ReadPokemonResponse,
+  ReadOnePokemonResponse,
+  UpdatePokemonResponse,
+  UpdatePokemonBody,
+  DeletePokemonResponse,
+  DeletePokemonParams,
+} from '../model/Pokemon';
+
+export const pokemonQueries = createQueries<
+  CreatePokemonResponse,
+  CreatePokemonBody,
+  ReadPokemonResponse,
+  ReadOnePokemonResponse,
+  UpdatePokemonResponse,
+  UpdatePokemonBody,
+  DeletePokemonResponse,
+  DeletePokemonParams
+>('pokemon');
+```
+
+In `createQueries`, we pass the types required for proper typing and the entity name according to the backend contract. We then use `pokemonQueries` to create the necessary `CRUD` hooks, as shown with `usePokemonList`:
+
+```ts:usePokemonList.ts
+import { useQuery } from '@tanstack/react-query';
+import { pokemonQueries } from './pokemon.query';
+
+type Props = {
+  limit: number;
+  offset: number;
+};
+
+export const usePokemonList = ({ limit, offset }: Props) => {
+  return useQuery({
+    ...pokemonQueries.read({ limit, offset }),
+  });
+};
+```
+
+We obtain all the `CRUD` hooks needed for the application, which can be used in UI components or other layers of the app. This makes the code structure more encapsulated and adapted to `FSD`.
+
+> Depending on the agreements in your project, you could write a factory for CRUD hooks, or just manually create only those you need, as we did.
+
+#### Features
+
+Features represent specific user actions that deliver business value. For example, editing or creating a new Pokemon. These features can use entities and wrap them in additional business rules, if necessary.
+
+Example structure of the `create-pokemon` feature:
+
+```
+src/
+└── features/
+    └── create-pokemon/
+        ├── model/
+        └── ui/
+```
+
+- **model/**: May contain a hook or function for creating a Pokemon (for example, using `usePokemonCreate` from `entities/pokemon/api`).
+- **ui/**: Components that render the add Pokemon form or UI for confirmation of the addition.
+
+```ts:CreatePokemon.tsx
+import { usePokemonCreate } from
+'../../../entities/pokemon/api/usePokemonCreate';
+import { CreatePokemonBody } from '../../../entities/pokemon/model/Pokemon';
+
+type Props = {
+  pokemon: CreatePokemonBody;
+};
+
+export const CreatePokemon = ({ pokemon }: Props) => {
+  const { mutate: createPokemon } = usePokemonCreate();
+
+  const handleCreate = () => {
+    createPokemon({
+      name: pokemon.name,
+    });
+  };
+
+  return (
+    <button
+      onClick={handleCreate}
+      className="bg-green-500 text-white p-2 rounded hover:bg-green-600 transition-colors"
+    >
+      Create {pokemon.name}
+    </button>
+  );
+};
+```
+
+Using the component:
+
+```tsx
+<CreatePokemon pokemon={{ name: 'Pikachu' }} />
+```
+
+#### Widgets
+
+Widgets are larger UI modules that can consist of multiple features and entities. For example, a `PokemonProfile` widget might include a list of all series and games the Pokemon has appeared in, information about its profile, etc.
+
+You can find a more detailed example of this approach in the [demo project](https://github.com/wangel13/request-fabric-react-query-fsd-example).
+
+## Conclusions
+
+We have implemented a flexible and reusable `CRUD` hook system using `@tanstack/react-query` and `axios`. Now you can easily use these hooks for any entity in your API, significantly simplifying your code and improving readability.
+
+This approach helps to scale the application easily and minimize code duplication. Applying `FSD` principles helps structure the project, making it more scalable and maintainable. Combining these approaches allows you to create flexible applications where modularity and component independence make the project easy to support and expand.
+
+Try incorporating this approach into your project, and you will quickly notice how it simplifies managing request state and integrating it into React components.
+
+### Interesting links:
+
+<Alert>
+  * [Demo with Pokemons](https://github.com/wangel13/request-fabric-react-query-fsd-example) *
+  [ReactQueryKit](https://github.com/HuolalaTech/react-query-kit). * [Query factories in
+  @tanstack/react-query](https://tkdodo.eu/blog/the-query-options-api#query-factories). * The FSD
+  guide includes an
+  [example](https://feature-sliced.design/docs/guides/tech/with-react-query#query-factory) of a
+  query factory implementation.
+</Alert>
