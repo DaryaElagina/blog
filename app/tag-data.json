@@ -1,0 +1,18 @@
+{
+  "nextjs": 1,
+  "tutorial": 4,
+  "react": 5,
+  "auth": 1,
+  "apollo": 1,
+  "graphql": 1,
+  "next-auth": 1,
+  "nx": 2,
+  "micro-frontends": 2,
+  "module-federation": 2,
+  "tailwind": 1,
+  "fsd": 1,
+  "react-query": 1,
+  "axios": 1,
+  "architecture": 1,
+  "hook-factory": 1
+}

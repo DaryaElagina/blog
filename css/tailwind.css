@@ -1,38 +1,149 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+@source '../node_modules/pliny';
+@custom-variant dark (&:where(.dark, .dark *));
 
-.prose h1,
-.prose h2,
-.prose h3,
-.prose h4,
-.prose h5,
-.prose h6 {
-  @apply relative;
+/* Core theme configuration */
+@theme {
+  /* Font families */
+  --font-sans:
+    var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-mono:
+    var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
+  --font-pixel-square: var(--font-geist-pixel-square);
+  --font-pixel-grid: var(--font-geist-pixel-grid);
+  --font-pixel-circle: var(--font-geist-pixel-circle);
+  --font-pixel-triangle: var(--font-geist-pixel-triangle);
+  --font-pixel-line: var(--font-geist-pixel-line);
+
+  /* Colors */
+  --color-primary-50: var(--color-purple-50);
+  --color-primary-100: var(--color-purple-100);
+  --color-primary-200: var(--color-purple-200);
+  --color-primary-300: var(--color-purple-300);
+  --color-primary-400: var(--color-purple-400);
+  --color-primary-500: var(--color-purple-500);
+  --color-primary-600: var(--color-purple-600);
+  --color-primary-700: var(--color-purple-700);
+  --color-primary-800: var(--color-purple-800);
+  --color-primary-900: var(--color-purple-900);
+  --color-primary-950: var(--color-purple-950);
+
+  --color-gray-50: var(--color-neutral-50);
+  --color-gray-100: var(--color-neutral-100);
+  --color-gray-200: var(--color-neutral-200);
+  --color-gray-300: var(--color-neutral-300);
+  --color-gray-400: var(--color-neutral-400);
+  --color-gray-500: var(--color-neutral-500);
+  --color-gray-600: var(--color-neutral-600);
+  --color-gray-700: var(--color-neutral-700);
+  --color-gray-800: var(--color-neutral-800);
+  --color-gray-900: var(--color-neutral-900);
+  --color-gray-950: var(--color-neutral-950);
+
+  /* Line heights */
+  --line-height-11: 2.75rem;
+  --line-height-12: 3rem;
+  --line-height-13: 3.25rem;
+  --line-height-14: 3.5rem;
+
+  /* Z-index values */
+  --z-60: 60;
+  --z-70: 70;
+  --z-80: 80;
 }
 
-.prose .anchor {
-  @apply invisible absolute;
-  margin-left: -1em;
-  padding-right: 0.5em;
-  width: 100%;
-  max-width: 700px;
-  height: 100%;
-  cursor: pointer;
-  text-decoration: none !important;
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+
+  a,
+  button {
+    outline-color: var(--color-primary-500);
+  }
+
+  a:focus-visible,
+  button:focus-visible {
+    outline: 2px solid;
+    border-radius: var(--radius-sm);
+    outline-color: var(--color-primary-500);
+  }
 }
 
-.prose .anchor:hover {
-  @apply visible no-underline;
+@layer utilities {
+  .prose {
+    & a {
+      color: var(--color-primary-500);
+      &:hover {
+        color: var(--color-primary-600);
+      }
+      & code {
+        color: var(--color-primary-400);
+      }
+    }
+    & :where(h1, h2) {
+      font-weight: 700;
+      letter-spacing: var(--tracking-tight);
+    }
+    & h3 {
+      font-weight: 600;
+    }
+    & :where(code):not(:where(pre code)) {
+      color: var(--color-pink-500);
+      background-color: var(--color-gray-100);
+      padding: 1px 4px;
+      border-radius: 0.25rem;
+    }
+    & :where(code):not(:where(pre code))::before,
+    & :where(code):not(:where(pre code))::after {
+      content: none;
+    }
+    & img {
+      margin-top: 5;
+      margin-bottom: 5;
+    }
+  }
+
+  .prose-invert {
+    & a {
+      color: var(--color-primary-500);
+      &:hover {
+        color: var(--color-primary-400);
+      }
+      & code {
+        color: var(--color-primary-400);
+      }
+    }
+    & :where(h1, h2, h3, h4, h5, h6) {
+      color: var(--color-gray-100);
+    }
+  }
 }
 
-.prose .anchor:after {
-  @apply text-gray-200 dark:text-gray-700;
-  content: '#';
-}
+@layer components {
+  .btn {
+    @apply inline rounded border border-transparent bg-gray-200 px-4 py-2 text-sm leading-5 font-medium text-gray-700 transition-colors duration-150 hover:bg-gray-300 dark:hover:bg-white;
+  }
 
-.prose *:hover > .anchor {
-  @apply visible no-underline;
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 dark:hover:bg-primary-500 text-white;
+  }
 }
 
 .task-list-item::before {
@@ -47,22 +158,48 @@
   @apply mt-12 border-t border-gray-200 pt-8 dark:border-gray-700;
 }
 
+.data-footnote-backref {
+  @apply no-underline;
+}
+
 .csl-entry {
   @apply my-5;
 }
 
-@layer components {
-  .btn {
-    @apply inline rounded border border-transparent bg-gray-200 px-4 py-2 text-sm font-medium leading-5 text-gray-700 transition-colors duration-150 hover:bg-gray-300 dark:hover:bg-white;
-  }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
 
-  .btn-primary {
-    @apply bg-primary-600 text-white hover:bg-primary-700 dark:hover:bg-primary-500;
-  }
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 /* https://stackoverflow.com/questions/61083813/how-to-avoid-internal-autofill-selected-style-to-be-applied */
 input:-webkit-autofill,
 input:-webkit-autofill:focus {
-  transition: background-color 600000s 0s, color 600000s 0s;
+  transition:
+    background-color 600000s 0s,
+    color 600000s 0s;
+}
+
+.katex-display {
+  overflow: auto hidden;
+}
+
+.content-header-link {
+  opacity: 0;
+  margin-left: -24px;
+  padding-right: 4px;
+}
+
+.content-header:hover .content-header-link,
+.content-header-link:hover {
+  opacity: 1;
+}
+
+.linkicon {
+  display: inline-block;
+  vertical-align: middle;
+  margin-bottom: 4px;
 }

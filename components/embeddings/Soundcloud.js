@@ -1,5 +1,6 @@
 const Soundcloud = ({ trackId }) => (
   <iframe
+    title={`Soundcloud track ${trackId}`}
     width="100%"
     height="166"
     scrolling="no"
