@@ -13,6 +13,10 @@
   "fsd": 1,
   "react-query": 1,
   "axios": 1,
-  "architecture": 1,
-  "hook-factory": 1
+  "architecture": 2,
+  "hook-factory": 1,
+  "llm": 1,
+  "ai": 1,
+  "software-engineering": 1,
+  "system-design": 1
 }

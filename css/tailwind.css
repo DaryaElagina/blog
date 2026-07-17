@@ -110,6 +110,14 @@
       padding: 1px 4px;
       border-radius: 0.25rem;
     }
+    & blockquote {
+      p {
+        &:first-of-type::before,
+        &:last-of-type::after {
+          content: none;
+        }
+      }
+    }
     & :where(code):not(:where(pre code))::before,
     & :where(code):not(:where(pre code))::after {
       content: none;
