@@ -1,3 +1,12 @@
-[![taras.one-banner](/public/static/images/twitter-card.png)](https://taras.one)
+# Персональный сайт Дарьи Елагиной
 
-# [Taras.one](https://taras.one) - personal blog
+Персональный сайт и портфолио Data Analyst / BI Analyst. Сайт представляет аналитические кейсы, а GitHub-репозитории служат технической базой с SQL, синтетическими данными и воспроизводимыми примерами.
+
+## Локальный запуск
+
+```bash
+npm install
+npm run dev
+```
+
+Контент сайта хранится в MDX. Исходные публикации форка сохранены в `data/blog` как черновики (`draft: true`) и не публикуются.
