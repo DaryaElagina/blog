@@ -8,8 +8,8 @@ const author = allAuthors.find((p) => p.slug === 'default') as Authors
 const mainContent = coreContent(author)
 
 export const metadata = genPageMetadata({
-  title: `About - ${author.name}`,
-  description: `About me - ${author.name}`,
+  title: `Обо мне — ${author.name}`,
+  description: `${author.name}, Data Analyst / BI Analyst: опыт, инструменты, образование и профессиональные интересы.`,
   image: author.avatar,
 })
 
