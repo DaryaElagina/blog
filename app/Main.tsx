@@ -1,5 +1,6 @@
 import Link from '@/components/Link'
 import Tag from '@/components/Tag'
+import PostStatus from '@/components/PostStatus'
 import siteMetadata from '@/data/siteMetadata'
 import { formatDate } from 'pliny/utils/formatDate'
 import NewsletterForm from 'pliny/ui/NewsletterForm'
@@ -35,6 +36,7 @@ export default function Home({ posts }) {
                     <div className="space-y-5 xl:col-span-3">
                       <div className="space-y-6">
                         <div>
+                          <PostStatus project={post.project} inProgress={post.inProgress} />
                           <h2 className="mb-2 font-sans text-2xl leading-8 font-semibold tracking-tight">
                             <Link
                               href={`/blog/${slug}`}
@@ -70,7 +72,7 @@ export default function Home({ posts }) {
                           >
                             <path d="M5 12h14M12 5l7 7-7 7" />
                           </svg>
-                          Читать далее
+                          {post.inProgress ? 'Открыть набросок' : 'Читать далее'}
                         </Link>
                       </div>
                     </div>

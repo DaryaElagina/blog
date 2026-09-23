@@ -5,6 +5,7 @@ import type { Blog } from 'contentlayer/generated'
 import Comments from '@/components/Comments'
 import Link from '@/components/Link'
 import PageTitle from '@/components/PageTitle'
+import PostStatus from '@/components/PostStatus'
 import SectionContainer from '@/components/SectionContainer'
 import siteMetadata from '@/data/siteMetadata'
 import ScrollTopAndComment from '@/components/ScrollTopAndComment'
@@ -25,6 +26,7 @@ export default function PostLayout({ content, next, prev, children }: LayoutProp
       <article>
         <div>
           <header>
+            <PostStatus project={content.project} inProgress={content.inProgress} />
             <div className="space-y-1 border-b border-gray-200 pb-10 text-center dark:border-gray-700">
               <dl>
                 <div>
@@ -39,6 +41,14 @@ export default function PostLayout({ content, next, prev, children }: LayoutProp
               </div>
             </div>
           </header>
+          {content.inProgress && (
+            <aside className="mt-8 rounded-xl border border-amber-200 bg-amber-50 p-5 text-amber-950 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-100">
+              <p className="font-semibold">Материал в разработке</p>
+              <p className="mt-2 leading-7">
+                Сейчас здесь рабочие заметки. Описание, примеры и иллюстрации будут дополнены.
+              </p>
+            </aside>
+          )}
           <div className="grid-rows-[auto_1fr] divide-y divide-gray-200 pb-8 xl:divide-y-0 dark:divide-gray-700">
             <div className="divide-y divide-gray-200 xl:col-span-3 xl:row-span-2 xl:pb-0 dark:divide-gray-700">
               <div className="prose dark:prose-invert max-w-none pt-10 pb-16">{children}</div>

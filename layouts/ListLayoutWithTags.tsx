@@ -7,6 +7,7 @@ import { CoreContent } from 'pliny/utils/contentlayer'
 import type { Blog } from 'contentlayer/generated'
 import Link from '@/components/Link'
 import Tag from '@/components/Tag'
+import PostStatus from '@/components/PostStatus'
 import siteMetadata from '@/data/siteMetadata'
 import tagData from 'app/tag-data.json'
 
@@ -37,7 +38,7 @@ function Pagination({ totalPages, currentPage }: PaginationProps) {
       <nav className="flex justify-between">
         {!prevPage && (
           <button className="cursor-auto disabled:opacity-50" disabled={!prevPage}>
-            Previous
+            Назад
           </button>
         )}
         {prevPage && (
@@ -45,20 +46,20 @@ function Pagination({ totalPages, currentPage }: PaginationProps) {
             href={currentPage - 1 === 1 ? `/${basePath}/` : `/${basePath}/page/${currentPage - 1}`}
             rel="prev"
           >
-            Previous
+            Назад
           </Link>
         )}
         <span>
-          {currentPage} of {totalPages}
+          {currentPage} из {totalPages}
         </span>
         {!nextPage && (
           <button className="cursor-auto disabled:opacity-50" disabled={!nextPage}>
-            Next
+            Далее
           </button>
         )}
         {nextPage && (
           <Link href={`/${basePath}/page/${currentPage + 1}`} rel="next">
-            Next
+            Далее
           </Link>
         )}
       </nav>
@@ -91,13 +92,13 @@ export default function ListLayoutWithTags({
           <div className="hidden h-full max-h-screen max-w-[280px] min-w-[280px] flex-wrap overflow-auto rounded-sm sm:flex dark:bg-gray-900/70 dark:shadow-gray-800/40">
             <div className="px-6 py-4">
               {pathname.startsWith('/blog') ? (
-                <h3 className="text-primary-500 font-semibold uppercase">All Posts</h3>
+                <h3 className="text-primary-500 font-semibold uppercase">Все статьи</h3>
               ) : (
                 <Link
                   href={`/blog`}
                   className="hover:text-primary-500 dark:hover:text-primary-500 font-bold text-gray-700 uppercase dark:text-gray-300"
                 >
-                  All Posts
+                  Все статьи
                 </Link>
               )}
               <ul>
@@ -140,6 +141,7 @@ export default function ListLayoutWithTags({
                       </dl>
                       <div className="space-y-3">
                         <div>
+                          <PostStatus project={post.project} inProgress={post.inProgress} />
                           <h2 className="mb-2 font-sans text-2xl leading-8 font-semibold tracking-tight">
                             <Link href={`/${path}`} className="text-gray-900 dark:text-gray-100">
                               {title}

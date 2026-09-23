@@ -2,7 +2,7 @@ const headerNavLinks = [
   { href: '/', title: 'Главная' },
   { href: '/blog', title: 'Статьи' },
   { href: '/tags', title: 'Темы' },
-  { href: '/cases', title: 'Кейсы' },
+  { href: '/projects', title: 'Проекты' },
   { href: '/about', title: 'Обо мне' },
 ]
 
