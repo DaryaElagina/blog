@@ -4,7 +4,7 @@ import 'katex/dist/katex.css'
 import PageTitle from '@/components/PageTitle'
 import { components } from '@/components/MDXComponents'
 import { MDXLayoutRenderer } from 'pliny/mdx-components'
-import { sortPosts, coreContent, allCoreContent } from 'pliny/utils/contentlayer'
+import { coreContent, allCoreContent } from 'pliny/utils/contentlayer'
 import { allBlogs, allAuthors } from 'contentlayer/generated'
 import type { Authors, Blog } from 'contentlayer/generated'
 import PostSimple from '@/layouts/PostSimple'
@@ -13,6 +13,7 @@ import PostBanner from '@/layouts/PostBanner'
 import { Metadata } from 'next'
 import siteMetadata from '@/data/siteMetadata'
 import { notFound } from 'next/navigation'
+import { sortPortfolioPosts } from '@/data/sortPortfolioPosts'
 
 const defaultLayout = 'PostLayout'
 const layouts = {
@@ -84,14 +85,14 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
   const slug = decodeURI(params.slug.join('/'))
   // Filter out drafts in production
   const publishedPosts = allBlogs.filter((post) => !post.draft)
-  const sortedCoreContents = allCoreContent(sortPosts(publishedPosts))
+  const sortedCoreContents = allCoreContent(sortPortfolioPosts(publishedPosts))
   const postIndex = sortedCoreContents.findIndex((p) => p.slug === slug)
   if (postIndex === -1) {
     return notFound()
   }
 
-  const prev = sortedCoreContents[postIndex + 1]
-  const next = sortedCoreContents[postIndex - 1]
+  const prev = sortedCoreContents[postIndex - 1]
+  const next = sortedCoreContents[postIndex + 1]
   const post = publishedPosts.find((p) => p.slug === slug) as Blog
   const authorList = post?.authors || ['default']
   const authorDetails = authorList.map((author) => {
