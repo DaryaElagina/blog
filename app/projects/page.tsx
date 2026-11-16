@@ -3,6 +3,7 @@ import PostStatus from '@/components/PostStatus'
 import portfolioProjects from '@/data/portfolioProjects'
 import { allBlogs } from 'contentlayer/generated'
 import { genPageMetadata } from 'app/seo'
+import { sortPortfolioPosts } from '@/data/sortPortfolioPosts'
 
 export const metadata = genPageMetadata({
   title: 'Проекты',
@@ -33,12 +34,9 @@ export default function Projects() {
       </nav>
       <div className="space-y-12">
         {portfolioProjects.map((project) => {
-          const posts = allBlogs
-            .filter((post) => !post.draft && post.project === project.id)
-            .sort(
-              (a, b) =>
-                Number(a.inProgress) - Number(b.inProgress) || a.title.localeCompare(b.title, 'ru')
-            )
+          const posts = sortPortfolioPosts(
+            allBlogs.filter((post) => !post.draft && post.project === project.id)
+          )
           return (
             <section
               key={project.id}
