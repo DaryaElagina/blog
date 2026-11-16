@@ -21,12 +21,12 @@
 
 ### DigitalKassa
 
-- [В разработке: Партнёрский и маркетинговый каналы: заявки, продажи и финансовые результаты](../data/blog/digitalkassa-channels.mdx)
+- [В разработке: От заявки до выручки: аналитика продаж и маркетинга DigitalKassa](../data/blog/digitalkassa-channels.mdx)
 - [В разработке: Отказы и дисквалификация: какие заявки теряются и почему](../data/blog/digitalkassa-disqualification.mdx)
 
 ### Edsofa.ai
 
-- [В разработке: Как я разбиралась в расхождениях ожидаемых платежей](../data/blog/edsofa-expected-payments.mdx)
+- [В разработке: Почему отчёт ожидаемых платежей терял клиентов](../data/blog/edsofa-expected-payments.mdx)
 - [В разработке: Отчёт партнёра: оборот, комиссия и агентское вознаграждение](../data/blog/edsofa-partner-report.mdx)
 
 ### ЭкстраПолис
