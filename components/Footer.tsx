@@ -6,16 +6,12 @@ export default function Footer() {
   return (
     <footer>
       <div className="mt-16 flex flex-col items-center">
-        <div className="mb-3 flex space-x-4">
-          {siteMetadata.email && (
-            <SocialIcon kind="mail" href={`mailto:${siteMetadata.email}`} size={6} />
-          )}
-          <SocialIcon kind="github" href={siteMetadata.github} size={6} />
-          {siteMetadata.linkedin && (
-            <SocialIcon kind="linkedin" href={siteMetadata.linkedin} size={6} />
-          )}
-          <SocialIcon kind="telegram" href={siteMetadata.telegram} size={6} />
-        </div>
+        <nav aria-label="Контакты" className="mb-3 flex flex-wrap justify-center gap-x-6 gap-y-3">
+          <SocialIcon kind="telegram" href={siteMetadata.telegram} label="Telegram" />
+          <SocialIcon kind="mail" href={`mailto:${siteMetadata.email}`} label="Email" />
+          <SocialIcon kind="linkedin" href={siteMetadata.linkedin} label="LinkedIn" />
+          <SocialIcon kind="github" href={siteMetadata.github} label="GitHub" />
+        </nav>
         <div className="mb-8 flex space-x-2 text-sm text-gray-500 dark:text-gray-400">
           <div>{siteMetadata.author}</div>
           <div>{` • `}</div>

@@ -1,7 +1,5 @@
 import { ReactNode } from 'react'
 import type { Authors } from 'contentlayer/generated'
-import SocialIcon from '@/components/social-icons'
-import siteMetadata from '@/data/siteMetadata'
 
 interface Props {
   children: ReactNode
@@ -23,10 +21,6 @@ export default function AuthorLayout({ children, content }: Props) {
           {name} — аналитик данных с исследовательским бэкграундом и опытом создания аналитических
           решений для сложных бизнес-процессов.
         </p>
-        <div className="flex space-x-3 pt-2">
-          <SocialIcon kind="github" href={siteMetadata.github} />
-          <SocialIcon kind="telegram" href={siteMetadata.telegram} />
-        </div>
       </header>
       <article className="prose dark:prose-invert max-w-none py-10 sm:py-12">{children}</article>
     </div>

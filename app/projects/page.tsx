@@ -1,5 +1,5 @@
 import Link from '@/components/Link'
-import PostStatus from '@/components/PostStatus'
+import PortfolioPostCard from '@/components/PortfolioPostCard'
 import portfolioProjects from '@/data/portfolioProjects'
 import { allBlogs } from 'contentlayer/generated'
 import { genPageMetadata } from 'app/seo'
@@ -8,8 +8,10 @@ import { sortPortfolioPosts } from '@/data/sortPortfolioPosts'
 export const metadata = genPageMetadata({
   title: 'Проекты',
   description:
-    'Проекты и рабочие заметки Дарьи Елагиной: BI, SQL, аналитика данных, руководства и хакатоны.',
+    'Проекты и рабочие заметки Дарьи Елагиной: BI, SQL, аналитика данных и практические руководства.',
 })
+
+const projectSections = portfolioProjects.filter((project) => project.id !== 'hackathons')
 
 export default function Projects() {
   return (
@@ -22,7 +24,7 @@ export default function Projects() {
         </p>
       </header>
       <nav aria-label="Разделы проектов" className="mb-12 flex flex-wrap gap-3">
-        {portfolioProjects.map((project) => (
+        {projectSections.map((project) => (
           <Link
             key={project.id}
             href={`#${project.id}`}
@@ -33,7 +35,7 @@ export default function Projects() {
         ))}
       </nav>
       <div className="space-y-12">
-        {portfolioProjects.map((project) => {
+        {projectSections.map((project) => {
           const posts = sortPortfolioPosts(
             allBlogs.filter((post) => !post.draft && post.project === project.id)
           )
@@ -49,29 +51,7 @@ export default function Projects() {
               </p>
               <div className="mt-6 grid gap-5 md:grid-cols-2">
                 {posts.map((post) => (
-                  <article
-                    key={post.slug}
-                    className="rounded-xl border border-gray-200 p-6 dark:border-gray-700"
-                  >
-                    <PostStatus inProgress={post.inProgress} />
-                    {!post.inProgress && (
-                      <p className="mb-3 text-sm text-emerald-700 dark:text-emerald-400">
-                        Опубликовано
-                      </p>
-                    )}
-                    <h3 className="text-xl leading-7 font-semibold">
-                      <Link href={`/blog/${post.slug}`}>{post.title}</Link>
-                    </h3>
-                    <p className="mt-3 leading-7 text-gray-600 dark:text-gray-400">
-                      {post.summary}
-                    </p>
-                    <Link
-                      href={`/blog/${post.slug}`}
-                      className="text-primary-600 dark:text-primary-400 mt-5 inline-block font-medium"
-                    >
-                      {post.inProgress ? 'Смотреть анонс' : 'Читать статью'} →
-                    </Link>
-                  </article>
+                  <PortfolioPostCard key={post.slug} post={post} />
                 ))}
               </div>
             </section>

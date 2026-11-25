@@ -13,7 +13,10 @@ export default function PostStatus({
   return (
     <div className="mb-3 flex flex-wrap items-center gap-3 text-sm">
       {item && (
-        <Link href={`/projects#${item.id}`} className="text-primary-600 dark:text-primary-400">
+        <Link
+          href={item.id === 'hackathons' ? '/hackathons' : `/projects#${item.id}`}
+          className="text-primary-600 dark:text-primary-400"
+        >
           {item.title}
         </Link>
       )}

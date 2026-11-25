@@ -16,12 +16,29 @@ import { Metadata } from 'next'
 import siteMetadata from '@/data/siteMetadata'
 import { notFound } from 'next/navigation'
 import { sortPortfolioPosts } from '@/data/sortPortfolioPosts'
+import { remark } from 'remark'
+import { visit } from 'unist-util-visit'
 
 const defaultLayout = 'PostLayout'
 const layouts = {
   PostSimple,
   PostLayout,
   PostBanner,
+}
+
+function firstDraftParagraph(markdown: string): string {
+  const paragraph = remark()
+    .parse(markdown)
+    .children.find((node) => node.type === 'paragraph')
+  if (!paragraph) return ''
+
+  let text = ''
+  visit(paragraph, (node) => {
+    if (node.type === 'text' || node.type === 'inlineCode') text += node.value
+    if (node.type === 'break') text += ' '
+  })
+
+  return text.replace(/\s+/g, ' ').trim()
 }
 
 export async function generateMetadata(props: {
@@ -98,13 +115,14 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
   const post = publishedPosts.find((p) => p.slug === slug) as Blog
 
   if (post.inProgress && process.env.NODE_ENV !== 'development') {
+    const preview = firstDraftParagraph(post.body.raw)
     return (
       <SectionContainer>
         <article className="py-10 sm:py-16">
           <PostStatus inProgress />
           <PageTitle>{post.title}</PageTitle>
           <p className="mt-8 max-w-3xl text-lg leading-8 text-gray-600 dark:text-gray-300">
-            {post.summary || 'Статья готовится.'}
+            {preview || post.summary || 'Статья готовится.'}
           </p>
         </article>
       </SectionContainer>
