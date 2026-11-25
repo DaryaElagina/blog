@@ -2,6 +2,8 @@ import 'css/prism.css'
 import 'katex/dist/katex.css'
 
 import PageTitle from '@/components/PageTitle'
+import PostStatus from '@/components/PostStatus'
+import SectionContainer from '@/components/SectionContainer'
 import { components } from '@/components/MDXComponents'
 import { MDXLayoutRenderer } from 'pliny/mdx-components'
 import { coreContent, allCoreContent } from 'pliny/utils/contentlayer'
@@ -94,6 +96,21 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
   const prev = sortedCoreContents[postIndex - 1]
   const next = sortedCoreContents[postIndex + 1]
   const post = publishedPosts.find((p) => p.slug === slug) as Blog
+
+  if (post.inProgress && process.env.NODE_ENV !== 'development') {
+    return (
+      <SectionContainer>
+        <article className="py-10 sm:py-16">
+          <PostStatus inProgress />
+          <PageTitle>{post.title}</PageTitle>
+          <p className="mt-8 max-w-3xl text-lg leading-8 text-gray-600 dark:text-gray-300">
+            {post.summary || 'Статья готовится.'}
+          </p>
+        </article>
+      </SectionContainer>
+    )
+  }
+
   const authorList = post?.authors || ['default']
   const authorDetails = authorList.map((author) => {
     const authorResults = allAuthors.find((p) => p.slug === author)

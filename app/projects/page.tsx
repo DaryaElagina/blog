@@ -69,7 +69,7 @@ export default function Projects() {
                       href={`/blog/${post.slug}`}
                       className="text-primary-600 dark:text-primary-400 mt-5 inline-block font-medium"
                     >
-                      {post.inProgress ? 'Открыть набросок' : 'Читать статью'} →
+                      {post.inProgress ? 'Смотреть анонс' : 'Читать статью'} →
                     </Link>
                   </article>
                 ))}

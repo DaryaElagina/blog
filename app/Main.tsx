@@ -59,7 +59,7 @@ export default function Home({ posts }) {
                         <Link
                           href={`/blog/${slug}`}
                           className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400 inline-flex items-center"
-                          aria-label={`Читать статью: «${title}»`}
+                          aria-label={`${post.inProgress ? 'Смотреть анонс' : 'Читать статью'}: «${title}»`}
                         >
                           <svg
                             fill="none"
@@ -72,7 +72,7 @@ export default function Home({ posts }) {
                           >
                             <path d="M5 12h14M12 5l7 7-7 7" />
                           </svg>
-                          {post.inProgress ? 'Открыть набросок' : 'Читать далее'}
+                          {post.inProgress ? 'Смотреть анонс' : 'Читать далее'}
                         </Link>
                       </div>
                     </div>
