@@ -2,6 +2,7 @@ import { defineDocumentType, ComputedFields, makeSource } from 'contentlayer2/so
 import { writeFileSync } from 'fs'
 import readingTime from 'reading-time'
 import { slug } from 'github-slugger'
+import tagPaths from './config/tag-paths.json'
 import path from 'path'
 import { fromHtmlIsomorphic } from 'hast-util-from-html-isomorphic'
 // Remark packages
@@ -62,10 +63,12 @@ const computedFields: ComputedFields = {
  */
 async function createTagCount(allBlogs) {
   const tagCount: Record<string, number> = {}
+  const tagLabels: Record<string, string> = {}
   allBlogs.forEach((file) => {
     if (file.tags && file.draft !== true) {
       file.tags.forEach((tag) => {
-        const formattedTag = slug(tag)
+        const formattedTag = (tagPaths as Record<string, string>)[slug(tag)] || slug(tag)
+        tagLabels[formattedTag] ||= tag
         if (formattedTag in tagCount) {
           tagCount[formattedTag] += 1
         } else {
@@ -76,6 +79,8 @@ async function createTagCount(allBlogs) {
   })
   const formatted = await prettier.format(JSON.stringify(tagCount, null, 2), { parser: 'json' })
   writeFileSync('./app/tag-data.json', formatted)
+  const labels = await prettier.format(JSON.stringify(tagLabels, null, 2), { parser: 'json' })
+  writeFileSync('./app/tag-labels.json', labels)
 }
 
 function createSearchIndex(allBlogs) {
@@ -83,12 +88,11 @@ function createSearchIndex(allBlogs) {
     siteMetadata?.search?.provider === 'kbar' &&
     siteMetadata.search.kbarConfig.searchDocumentsPath
   ) {
-    const searchDocuments = allCoreContent(
-      sortPosts(allBlogs.filter((post) => !post.draft))
-    ).map((post) =>
-      post.inProgress
-        ? { title: post.title, date: post.date, path: post.path, summary: post.summary }
-        : post
+    const searchDocuments = allCoreContent(sortPosts(allBlogs.filter((post) => !post.draft))).map(
+      (post) =>
+        post.inProgress
+          ? { title: post.title, date: post.date, path: post.path, summary: post.summary }
+          : post
     )
     writeFileSync(
       `public/${path.basename(siteMetadata.search.kbarConfig.searchDocumentsPath)}`,

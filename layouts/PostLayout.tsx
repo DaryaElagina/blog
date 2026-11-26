@@ -7,6 +7,7 @@ import PageTitle from '@/components/PageTitle'
 import SectionContainer from '@/components/SectionContainer'
 import Image from '@/components/Image'
 import Tag from '@/components/Tag'
+import { competencyTags } from '@/data/competencyTags'
 import siteMetadata from '@/data/siteMetadata'
 import ScrollTopAndComment from '@/components/ScrollTopAndComment'
 
@@ -132,10 +133,10 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
                 {tags && (
                   <div className="py-4 xl:py-8">
                     <h2 className="mb-2 text-xs tracking-wide text-gray-500 uppercase dark:text-gray-400">
-                      Tags
+                      Компетенции
                     </h2>
                     <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-                      {tags.map((tag) => (
+                      {competencyTags(tags).map((tag) => (
                         <Tag key={tag} text={tag} />
                       ))}
                     </div>

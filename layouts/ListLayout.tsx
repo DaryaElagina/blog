@@ -7,6 +7,7 @@ import { CoreContent } from 'pliny/utils/contentlayer'
 import type { Blog } from 'contentlayer/generated'
 import Link from '@/components/Link'
 import Tag from '@/components/Tag'
+import { competencyTags } from '@/data/competencyTags'
 import siteMetadata from '@/data/siteMetadata'
 
 interface PaginationProps {
@@ -136,7 +137,7 @@ export default function ListLayout({
                         </Link>
                       </h3>
                       <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-                        {tags?.map((tag) => (
+                        {competencyTags(tags).map((tag) => (
                           <Tag key={tag} text={tag} />
                         ))}
                       </div>

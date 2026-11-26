@@ -1,44 +1,35 @@
-import Link from '@/components/Link'
 import Tag from '@/components/Tag'
-import { slug } from 'github-slugger'
+import { isCompetencyTag } from '@/data/competencyTags'
 import tagData from 'app/tag-data.json'
 import { genPageMetadata } from 'app/seo'
 
 export const metadata = genPageMetadata({
-  title: 'Темы',
-  description: 'Темы статей об аналитике данных, SQL, BI и Data Quality.',
+  title: 'Компетенции',
+  description:
+    'Профессиональные навыки и методы работы Дарьи Елагиной, раскрытые в статьях и практических кейсах.',
 })
 
 export default async function Page() {
   const tagCounts = tagData as Record<string, number>
-  const tagKeys = Object.keys(tagCounts)
-  const sortedTags = tagKeys.sort((a, b) => tagCounts[b] - tagCounts[a])
+  const sortedTags = Object.keys(tagCounts)
+    .filter(isCompetencyTag)
+    .sort((a, b) => tagCounts[b] - tagCounts[a] || a.localeCompare(b, 'ru'))
   return (
-    <>
-      <div className="flex flex-col items-start justify-start divide-y divide-gray-200 md:mt-24 md:flex-row md:items-center md:justify-center md:space-x-6 md:divide-y-0 dark:divide-gray-700">
-        <div className="space-x-2 pt-6 pb-8 md:space-y-5">
-          <h1 className="font-pixel-grid text-3xl leading-9 tracking-tight text-gray-900 sm:text-4xl sm:leading-10 md:border-r-2 md:px-6 md:text-6xl md:leading-14 dark:text-gray-100">
-            Темы
-          </h1>
-        </div>
-        <div className="flex max-w-lg flex-wrap">
-          {tagKeys.length === 0 && 'Тем пока нет.'}
-          {sortedTags.map((t) => {
-            return (
-              <div key={t} className="mt-2 mr-5 mb-2">
-                <Tag text={t} />
-                <Link
-                  href={`/tags/${slug(t)}`}
-                  className="text-sm font-semibold text-gray-600 uppercase dark:text-gray-300"
-                  aria-label={`View posts tagged ${t}`}
-                >
-                  {` (${tagCounts[t]})`}
-                </Link>
-              </div>
-            )
-          })}
-        </div>
+    <div className="flex flex-col pt-12 pb-16 xl:mt-16 xl:flex-row xl:items-start xl:justify-center xl:gap-6 xl:pt-6">
+      <div className="pb-8 xl:w-80 xl:shrink-0 xl:border-r-2 xl:border-gray-200 xl:py-2 xl:pr-6 dark:xl:border-gray-700">
+        <h1 className="font-pixel-grid text-4xl tracking-tight text-gray-900 sm:text-5xl dark:text-gray-100">
+          Компетенции
+        </h1>
+        <p className="mt-4 max-w-lg text-sm leading-6 text-gray-600 dark:text-gray-400">
+          Профессиональные навыки и методы работы, раскрытые в моих статьях и практических кейсах.
+        </p>
       </div>
-    </>
+      <div className="flex min-w-0 flex-wrap items-baseline gap-x-5 gap-y-2 xl:max-w-2xl">
+        {sortedTags.length === 0 && 'Компетенций пока нет.'}
+        {sortedTags.map((tag) => (
+          <Tag key={tag} text={tag} count={tagCounts[tag]} />
+        ))}
+      </div>
+    </div>
   )
 }

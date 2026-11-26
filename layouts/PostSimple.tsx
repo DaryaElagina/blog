@@ -6,6 +6,8 @@ import Comments from '@/components/Comments'
 import Link from '@/components/Link'
 import PageTitle from '@/components/PageTitle'
 import PostStatus from '@/components/PostStatus'
+import Tag from '@/components/Tag'
+import { competencyTags } from '@/data/competencyTags'
 import SectionContainer from '@/components/SectionContainer'
 import siteMetadata from '@/data/siteMetadata'
 import ScrollTopAndComment from '@/components/ScrollTopAndComment'
@@ -19,6 +21,7 @@ interface LayoutProps {
 
 export default function PostLayout({ content, next, prev, children }: LayoutProps) {
   const { path, slug, date, title } = content
+  const skills = competencyTags(content.tags)
 
   return (
     <SectionContainer>
@@ -39,6 +42,13 @@ export default function PostLayout({ content, next, prev, children }: LayoutProp
               <div>
                 <PageTitle>{title}</PageTitle>
               </div>
+              {skills.length > 0 && (
+                <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 pt-4">
+                  {skills.map((tag) => (
+                    <Tag key={tag} text={tag} />
+                  ))}
+                </div>
+              )}
             </div>
           </header>
           {content.inProgress && (

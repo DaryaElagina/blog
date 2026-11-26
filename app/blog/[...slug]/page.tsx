@@ -3,6 +3,8 @@ import 'katex/dist/katex.css'
 
 import PageTitle from '@/components/PageTitle'
 import PostStatus from '@/components/PostStatus'
+import Tag from '@/components/Tag'
+import { competencyTags } from '@/data/competencyTags'
 import SectionContainer from '@/components/SectionContainer'
 import { components } from '@/components/MDXComponents'
 import { MDXLayoutRenderer } from 'pliny/mdx-components'
@@ -121,6 +123,11 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
         <article className="py-10 sm:py-16">
           <PostStatus inProgress />
           <PageTitle>{post.title}</PageTitle>
+          <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2">
+            {competencyTags(post.tags).map((tag) => (
+              <Tag key={tag} text={tag} />
+            ))}
+          </div>
           <p className="mt-8 max-w-3xl text-lg leading-8 text-gray-600 dark:text-gray-300">
             {preview || post.summary || 'Статья готовится.'}
           </p>

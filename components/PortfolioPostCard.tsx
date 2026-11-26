@@ -1,5 +1,7 @@
 import Link from '@/components/Link'
 import PostStatus from '@/components/PostStatus'
+import Tag from '@/components/Tag'
+import { competencyTags } from '@/data/competencyTags'
 import type { Blog } from 'contentlayer/generated'
 
 export default function PortfolioPostCard({ post }: { post: Blog }) {
@@ -12,6 +14,11 @@ export default function PortfolioPostCard({ post }: { post: Blog }) {
       <h3 className="text-xl leading-7 font-semibold">
         <Link href={`/blog/${post.slug}`}>{post.title}</Link>
       </h3>
+      <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1.5">
+        {competencyTags(post.tags).map((tag) => (
+          <Tag key={tag} text={tag} />
+        ))}
+      </div>
       <p className="mt-3 leading-7 text-gray-600 dark:text-gray-400">{post.summary}</p>
       <Link
         href={`/blog/${post.slug}`}

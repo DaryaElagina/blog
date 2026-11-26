@@ -13,13 +13,13 @@ const Header = () => {
 
   return (
     <header className={headerClass}>
-      <Link href="/" aria-label={siteMetadata.headerTitle}>
+      <Link href="/" aria-label={siteMetadata.headerTitle} className="shrink-0">
         <div className="flex items-center justify-between">
           <div className="mr-3 flex h-11 w-11 items-center justify-center rounded-lg border border-gray-300 font-mono font-bold dark:border-gray-700">
             DE
           </div>
           {typeof siteMetadata.headerTitle === 'string' ? (
-            <div className="hidden h-6 font-mono text-2xl font-medium sm:contents">
+            <div className="hidden font-mono text-2xl font-medium whitespace-nowrap sm:block">
               {siteMetadata.headerTitle}
             </div>
           ) : (
@@ -27,8 +27,8 @@ const Header = () => {
           )}
         </div>
       </Link>
-      <div className="flex items-center space-x-4 leading-5 sm:-mr-6 sm:space-x-6">
-        <div className="no-scrollbar hidden max-w-40 items-center gap-x-2.5 overflow-x-auto whitespace-nowrap sm:flex md:max-w-72 lg:max-w-96">
+      <div className="flex shrink-0 items-center gap-4 leading-5 sm:gap-6">
+        <div className="hidden items-center gap-x-4 whitespace-nowrap xl:flex">
           {headerNavLinks
             .filter((link) => link.href !== '/')
             .map((link) => (

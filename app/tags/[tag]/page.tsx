@@ -1,4 +1,4 @@
-import { slug } from 'github-slugger'
+import { tagPath } from '@/data/competencyTags'
 import { allCoreContent } from 'pliny/utils/contentlayer'
 import siteMetadata from '@/data/siteMetadata'
 import ListLayout from '@/layouts/ListLayoutWithTags'
@@ -7,6 +7,7 @@ import tagData from 'app/tag-data.json'
 import { genPageMetadata } from 'app/seo'
 import { Metadata } from 'next'
 import { sortPortfolioPosts } from '@/data/sortPortfolioPosts'
+import { competencyTagLabel } from '@/data/competencyTags'
 
 const POSTS_PER_PAGE = 5
 
@@ -16,7 +17,7 @@ export async function generateMetadata(props: {
   const params = await props.params
   const tag = decodeURI(params.tag)
   return genPageMetadata({
-    title: tag,
+    title: competencyTagLabel(tag),
     description: `${siteMetadata.title} ${tag} tagged content`,
     alternates: {
       canonical: './',
@@ -38,11 +39,11 @@ export const generateStaticParams = async () => {
 export default async function TagPage(props: { params: Promise<{ tag: string }> }) {
   const params = await props.params
   const tag = decodeURI(params.tag)
-  const title = tag[0].toUpperCase() + tag.split(' ').join('-').slice(1)
+  const title = `#${competencyTagLabel(tag)}`
   const filteredPosts = allCoreContent(
     sortPortfolioPosts(
       allBlogs.filter(
-        (post) => !post.draft && post.tags && post.tags.map((t) => slug(t)).includes(tag)
+        (post) => !post.draft && post.tags && post.tags.map((t) => tagPath(t)).includes(tag)
       )
     )
   )

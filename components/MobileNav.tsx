@@ -40,7 +40,7 @@ const MobileNav = () => {
 
   return (
     <>
-      <button aria-label="Открыть меню" onClick={onToggleNav} className="sm:hidden">
+      <button aria-label="Открыть меню" onClick={onToggleNav} className="xl:hidden">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"

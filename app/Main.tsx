@@ -4,6 +4,7 @@ import PostStatus from '@/components/PostStatus'
 import siteMetadata from '@/data/siteMetadata'
 import { formatDate } from 'pliny/utils/formatDate'
 import NewsletterForm from 'pliny/ui/NewsletterForm'
+import { competencyTags } from '@/data/competencyTags'
 
 const MAX_DISPLAY = 5
 
@@ -46,7 +47,7 @@ export default function Home({ posts }) {
                             </Link>
                           </h2>
                           <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-                            {tags.map((tag) => (
+                            {competencyTags(tags).map((tag) => (
                               <Tag key={tag} text={tag} />
                             ))}
                           </div>

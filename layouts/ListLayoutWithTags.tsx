@@ -1,7 +1,6 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { slug } from 'github-slugger'
 import { formatDate } from 'pliny/utils/formatDate'
 import { CoreContent } from 'pliny/utils/contentlayer'
 import type { Blog } from 'contentlayer/generated'
@@ -10,6 +9,7 @@ import Tag from '@/components/Tag'
 import PostStatus from '@/components/PostStatus'
 import siteMetadata from '@/data/siteMetadata'
 import tagData from 'app/tag-data.json'
+import { competencyTagLabel, competencyTags, isCompetencyTag, tagPath } from '@/data/competencyTags'
 
 interface PaginationProps {
   totalPages: number
@@ -75,7 +75,7 @@ export default function ListLayoutWithTags({
 }: ListLayoutProps) {
   const pathname = usePathname()
   const tagCounts = tagData as Record<string, number>
-  const tagKeys = Object.keys(tagCounts)
+  const tagKeys = Object.keys(tagCounts).filter(isCompetencyTag)
   const sortedTags = tagKeys.sort((a, b) => tagCounts[b] - tagCounts[a])
 
   const displayPosts = initialDisplayPosts.length > 0 ? initialDisplayPosts : posts
@@ -84,7 +84,9 @@ export default function ListLayoutWithTags({
     <>
       <div>
         <div className="pt-6 pb-6">
-          <h1 className="text-3xl leading-9 font-semibold tracking-tight text-gray-900 sm:hidden sm:text-4xl sm:leading-10 md:text-6xl md:leading-14 dark:text-gray-100">
+          <h1
+            className={`${pathname.startsWith('/tags/') ? '' : 'sm:hidden'} text-3xl leading-9 font-semibold tracking-tight text-gray-900 sm:text-4xl sm:leading-10 dark:text-gray-100`}
+          >
             {title}
           </h1>
         </div>
@@ -105,17 +107,17 @@ export default function ListLayoutWithTags({
                 {sortedTags.map((t) => {
                   return (
                     <li key={t} className="my-3">
-                      {decodeURI(pathname.split('/tags/')[1]) === slug(t) ? (
-                        <h3 className="text-primary-500 inline px-3 py-2 text-sm font-bold uppercase">
-                          {`${t} (${tagCounts[t]})`}
+                      {decodeURI(pathname.split('/tags/')[1] || '').split('/')[0] === tagPath(t) ? (
+                        <h3 className="text-primary-500 inline px-3 py-2 text-sm font-bold">
+                          {`#${competencyTagLabel(t)} (${tagCounts[t]})`}
                         </h3>
                       ) : (
                         <Link
-                          href={`/tags/${slug(t)}`}
-                          className="hover:text-primary-500 dark:hover:text-primary-500 px-3 py-2 text-sm font-medium text-gray-500 uppercase dark:text-gray-300"
-                          aria-label={`View posts tagged ${t}`}
+                          href={`/tags/${tagPath(t)}`}
+                          className="hover:text-primary-500 dark:hover:text-primary-500 px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-300"
+                          aria-label={`Статьи по компетенции ${competencyTagLabel(t)}`}
                         >
-                          {`${t} (${tagCounts[t]})`}
+                          {`#${competencyTagLabel(t)} (${tagCounts[t]})`}
                         </Link>
                       )}
                     </li>
@@ -148,7 +150,7 @@ export default function ListLayoutWithTags({
                             </Link>
                           </h2>
                           <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-                            {tags?.map((tag) => (
+                            {competencyTags(tags).map((tag) => (
                               <Tag key={tag} text={tag} />
                             ))}
                           </div>
