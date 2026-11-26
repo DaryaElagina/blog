@@ -91,7 +91,7 @@ function createSearchIndex(allBlogs) {
     const searchDocuments = allCoreContent(sortPosts(allBlogs.filter((post) => !post.draft))).map(
       (post) =>
         post.inProgress
-          ? { title: post.title, date: post.date, path: post.path, summary: post.summary }
+          ? { title: post.title, path: post.path, summary: post.summary, inProgress: true }
           : post
     )
     writeFileSync(
@@ -108,7 +108,7 @@ export const Blog = defineDocumentType(() => ({
   contentType: 'mdx',
   fields: {
     title: { type: 'string', required: true },
-    date: { type: 'date', required: true },
+    date: { type: 'date' },
     tags: { type: 'list', of: { type: 'string' }, default: [] },
     lastmod: { type: 'date' },
     draft: { type: 'boolean' },
@@ -140,8 +140,8 @@ export const Blog = defineDocumentType(() => ({
         '@context': 'https://schema.org',
         '@type': 'BlogPosting',
         headline: doc.title,
-        datePublished: doc.date,
-        dateModified: doc.lastmod || doc.date,
+        ...(doc.date && { datePublished: doc.date }),
+        ...((doc.lastmod || doc.date) && { dateModified: doc.lastmod || doc.date }),
         description: doc.summary,
         image: doc.images ? doc.images[0] : siteMetadata.socialBanner,
         url: `${siteMetadata.siteUrl}/${doc._raw.flattenedPath}`,

@@ -1,10 +1,13 @@
-import ListLayout from '@/layouts/ListLayoutWithTags'
+import BlogCatalog from '@/components/BlogCatalog'
 import { allCoreContent } from 'pliny/utils/contentlayer'
 import { allBlogs } from 'contentlayer/generated'
 import { notFound } from 'next/navigation'
 import { sortPortfolioPosts } from '@/data/sortPortfolioPosts'
+import { genPageMetadata } from 'app/seo'
 
 const POSTS_PER_PAGE = 5
+
+export const metadata = genPageMetadata({ title: 'Статьи' })
 
 export const generateStaticParams = async () => {
   const totalPages = Math.ceil(allBlogs.filter((post) => !post.draft).length / POSTS_PER_PAGE)
@@ -23,21 +26,5 @@ export default async function Page(props: { params: Promise<{ page: string }> })
   if (pageNumber <= 0 || pageNumber > totalPages || isNaN(pageNumber)) {
     return notFound()
   }
-  const initialDisplayPosts = posts.slice(
-    POSTS_PER_PAGE * (pageNumber - 1),
-    POSTS_PER_PAGE * pageNumber
-  )
-  const pagination = {
-    currentPage: pageNumber,
-    totalPages: totalPages,
-  }
-
-  return (
-    <ListLayout
-      posts={posts}
-      initialDisplayPosts={initialDisplayPosts}
-      pagination={pagination}
-      title="Все статьи"
-    />
-  )
+  return <BlogCatalog posts={posts} currentPage={pageNumber} />
 }

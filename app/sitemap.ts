@@ -11,7 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     .filter((post) => !post.draft)
     .map((post) => ({
       url: `${siteUrl}/${post.path}`,
-      lastModified: post.lastmod || post.date,
+      ...(post.lastmod || post.date ? { lastModified: post.lastmod || post.date } : {}),
     }))
 
   const routes = ['', 'blog', 'projects', 'hackathons', 'cases', 'tags', 'about'].map((route) => ({

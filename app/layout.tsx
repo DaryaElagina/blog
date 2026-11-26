@@ -6,7 +6,7 @@ import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import { GeistPixelSquare, GeistPixelGrid, GeistPixelLine } from 'geist/font/pixel'
 import { Analytics, AnalyticsConfig } from 'pliny/analytics'
-import { SearchProvider, SearchConfig } from 'pliny/search'
+import SiteSearchProvider from '@/components/SiteSearchProvider'
 import Header from '@/components/Header'
 import SectionContainer from '@/components/SectionContainer'
 import Footer from '@/components/Footer'
@@ -97,10 +97,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProviders>
           <Analytics analyticsConfig={siteMetadata.analytics as AnalyticsConfig} />
           <SectionContainer>
-            <SearchProvider searchConfig={siteMetadata.search as SearchConfig}>
+            <SiteSearchProvider>
               <Header />
               <main className="mb-auto">{children}</main>
-            </SearchProvider>
+            </SiteSearchProvider>
             <Footer />
           </SectionContainer>
         </ThemeProviders>
