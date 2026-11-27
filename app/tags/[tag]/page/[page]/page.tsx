@@ -1,11 +1,10 @@
-import { tagPath } from '@/data/competencyTags'
 import { allCoreContent } from 'pliny/utils/contentlayer'
-import ListLayout from '@/layouts/ListLayoutWithTags'
+import BlogCatalog from '@/components/BlogCatalog'
 import { allBlogs } from 'contentlayer/generated'
 import tagData from 'app/tag-data.json'
 import { notFound } from 'next/navigation'
 import { sortPortfolioPosts } from '@/data/sortPortfolioPosts'
-import { competencyTagLabel } from '@/data/competencyTags'
+import { tagPath } from '@/data/competencyTags'
 
 const POSTS_PER_PAGE = 5
 
@@ -15,7 +14,7 @@ export const generateStaticParams = async () => {
     const postCount = tagCounts[tag]
     const totalPages = Math.max(1, Math.ceil(postCount / POSTS_PER_PAGE))
     return Array.from({ length: totalPages }, (_, i) => ({
-      tag: encodeURI(tag),
+      tag,
       page: (i + 1).toString(),
     }))
   })
@@ -24,14 +23,9 @@ export const generateStaticParams = async () => {
 export default async function TagPage(props: { params: Promise<{ tag: string; page: string }> }) {
   const params = await props.params
   const tag = decodeURI(params.tag)
-  const title = `#${competencyTagLabel(tag)}`
   const pageNumber = parseInt(params.page)
-  const filteredPosts = allCoreContent(
-    sortPortfolioPosts(
-      allBlogs.filter(
-        (post) => !post.draft && post.tags && post.tags.map((t) => tagPath(t)).includes(tag)
-      )
-    )
+  const filteredPosts = allBlogs.filter(
+    (post) => !post.draft && post.tags?.some((postTag) => tagPath(postTag) === tag)
   )
   const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE)
 
@@ -39,21 +33,6 @@ export default async function TagPage(props: { params: Promise<{ tag: string; pa
   if (pageNumber <= 0 || pageNumber > totalPages || isNaN(pageNumber)) {
     return notFound()
   }
-  const initialDisplayPosts = filteredPosts.slice(
-    POSTS_PER_PAGE * (pageNumber - 1),
-    POSTS_PER_PAGE * pageNumber
-  )
-  const pagination = {
-    currentPage: pageNumber,
-    totalPages: totalPages,
-  }
-
-  return (
-    <ListLayout
-      posts={filteredPosts}
-      initialDisplayPosts={initialDisplayPosts}
-      pagination={pagination}
-      title={title}
-    />
-  )
+  const posts = allCoreContent(sortPortfolioPosts(allBlogs.filter((post) => !post.draft)))
+  return <BlogCatalog key={tag} posts={posts} currentPage={pageNumber} initialCompetency={tag} />
 }

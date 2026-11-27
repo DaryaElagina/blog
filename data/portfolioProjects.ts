@@ -1,33 +1,7 @@
+import projectProfiles from './projectProfiles'
+
 const portfolioProjects = [
-  {
-    id: 'autocenter',
-    title: 'Автоцентр Брокерс',
-    description:
-      'Урегулирование убытков и расчёт стоимости ремонта автомобилей. Аналитика сроков, стоимости ремонта и инцидентов.',
-  },
-  {
-    id: 'internal-reporting',
-    title: 'Внутренняя управленческая отчётность',
-    description:
-      'Замена большого Excel-отчёта автоматизированным внутренним отчётом из трёх источников.',
-  },
-  {
-    id: 'extrapolice',
-    title: 'ЭкстраПолис',
-    description: 'Страховая платформа. Работа с BI-отчётностью в закрытом контуре.',
-  },
-  {
-    id: 'edsofa',
-    title: 'Edsofa.ai',
-    description:
-      'Экосистема IT-сервисов для приёма платежей. Аналитика ожидаемых платежей и отчётность для партнёров.',
-  },
-  {
-    id: 'digitalkassa',
-    title: 'DigitalKassa',
-    description:
-      'Сервис удалённой фискализации. Управленческая отчётность по продажам, маркетингу и партнёрскому каналу.',
-  },
+  ...projectProfiles.map(({ id, title, summary }) => ({ id, title, description: summary })),
   {
     id: 'hackathons',
     title: 'Хакатоны',

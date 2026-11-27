@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { formatDate } from 'pliny/utils/formatDate'
 import type { CoreContent } from 'pliny/utils/contentlayer'
 import type { Blog } from 'contentlayer/generated'
@@ -16,15 +17,20 @@ const POSTS_PER_PAGE = 5
 export default function BlogCatalog({
   posts,
   currentPage = 1,
+  initialCompetency = '',
 }: {
   posts: CoreContent<Blog>[]
   currentPage?: number
+  initialCompetency?: string
 }) {
+  const router = useRouter()
   const [project, setProject] = useState('')
-  const [competency, setCompetency] = useState('')
+  const [competency, setCompetency] = useState(initialCompetency)
   const [query, setQuery] = useState('')
   const search = query.trim().toLocaleLowerCase('ru')
   const isFiltered = Boolean(project || competency || search)
+  const isCompetencyPage = Boolean(initialCompetency)
+  const hasAdditionalFilters = Boolean(project || search)
 
   const competencyOptions = useMemo(() => {
     const counts = new Map<string, { label: string; count: number }>()
@@ -35,29 +41,40 @@ export default function BlogCatalog({
         counts.set(key, { label: competencyTagLabel(tag), count: (current?.count || 0) + 1 })
       })
     })
+    if (initialCompetency && !counts.has(initialCompetency)) {
+      counts.set(initialCompetency, { label: competencyTagLabel(initialCompetency), count: 0 })
+    }
     return [...counts.entries()].sort(
       ([keyA, a], [keyB, b]) => b.count - a.count || keyA.localeCompare(keyB, 'ru')
     )
-  }, [posts])
+  }, [posts, initialCompetency])
 
   const filteredPosts = posts.filter(
     (post) =>
       (!project || post.project === project) &&
-      (!competency || competencyTags(post.tags).some((tag) => tagPath(tag) === competency)) &&
+      (!competency || post.tags?.some((tag) => tagPath(tag) === competency)) &&
       (!search || `${post.title} ${post.summary || ''}`.toLocaleLowerCase('ru').includes(search))
   )
-  const totalPages = Math.ceil(posts.length / POSTS_PER_PAGE)
-  const displayPosts = isFiltered
-    ? filteredPosts
-    : posts.slice((currentPage - 1) * POSTS_PER_PAGE, currentPage * POSTS_PER_PAGE)
+  const paginatedPosts = isCompetencyPage ? filteredPosts : posts
+  const totalPages = Math.ceil(paginatedPosts.length / POSTS_PER_PAGE)
+  const displayPosts =
+    isCompetencyPage && !hasAdditionalFilters
+      ? filteredPosts.slice((currentPage - 1) * POSTS_PER_PAGE, currentPage * POSTS_PER_PAGE)
+      : isFiltered
+        ? filteredPosts
+        : posts.slice((currentPage - 1) * POSTS_PER_PAGE, currentPage * POSTS_PER_PAGE)
+  const paginationBase = isCompetencyPage ? `/tags/${initialCompetency}` : '/blog'
 
   return (
     <div className="py-10 sm:py-16">
       <header className="mb-10 max-w-3xl">
-        <h1 className="font-pixel-grid text-4xl tracking-tight sm:text-5xl">Статьи</h1>
+        <h1 className="font-pixel-grid text-4xl tracking-tight sm:text-5xl">
+          {isCompetencyPage ? `#${competencyTagLabel(initialCompetency)}` : 'Статьи'}
+        </h1>
         <p className="mt-4 text-lg leading-8 text-gray-600 dark:text-gray-400">
-          Аналитические кейсы и рабочие заметки: задачи, ход исследования и решения, которые
-          помогают лучше понимать данные и бизнес-процессы.
+          {isCompetencyPage
+            ? 'Материалы по выбранной компетенции: задачи, ход исследования и аналитические решения.'
+            : 'Аналитические кейсы и рабочие заметки: задачи, ход исследования и решения, которые помогают лучше понимать данные и бизнес-процессы.'}
         </p>
       </header>
 
@@ -87,7 +104,14 @@ export default function BlogCatalog({
           </span>
           <select
             value={competency}
-            onChange={(event) => setCompetency(event.target.value)}
+            onChange={(event) => {
+              const nextCompetency = event.target.value
+              if (isCompetencyPage) {
+                router.push(nextCompetency ? `/tags/${nextCompetency}/` : '/blog/')
+              } else {
+                setCompetency(nextCompetency)
+              }
+            }}
             className="focus:border-primary-500 w-full min-w-0 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
           >
             <option value="">Все компетенции</option>
@@ -157,13 +181,19 @@ export default function BlogCatalog({
         </ol>
       )}
 
-      {!isFiltered && totalPages > 1 && (
+      {(!isFiltered || (isCompetencyPage && !hasAdditionalFilters)) && totalPages > 1 && (
         <nav
           aria-label="Страницы каталога"
           className="flex items-center justify-between border-t border-gray-200 py-6 text-sm dark:border-gray-700"
         >
           {currentPage > 1 ? (
-            <Link href={currentPage === 2 ? '/blog/' : `/blog/page/${currentPage - 1}/`}>
+            <Link
+              href={
+                currentPage === 2
+                  ? `${paginationBase}/`
+                  : `${paginationBase}/page/${currentPage - 1}/`
+              }
+            >
               Назад
             </Link>
           ) : (
@@ -173,7 +203,7 @@ export default function BlogCatalog({
             {currentPage} из {totalPages}
           </span>
           {currentPage < totalPages ? (
-            <Link href={`/blog/page/${currentPage + 1}/`}>Далее</Link>
+            <Link href={`${paginationBase}/page/${currentPage + 1}/`}>Далее</Link>
           ) : (
             <span />
           )}
